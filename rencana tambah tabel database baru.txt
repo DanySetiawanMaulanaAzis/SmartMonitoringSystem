@@ -1,0 +1,73 @@
+tabel DailyUserSummary
+CREATE TABLE DailyUserSummary (
+    SummaryId INT PRIMARY KEY IDENTITY(1,1),
+    UserId INT NOT NULL,
+    WorkDate DATE NOT NULL,
+
+    FinishedToday INT NOT NULL,
+    AvgWorkmanship INT NOT NULL,
+    TotalWorkmanship INT NOT NULL,
+
+    EfficiencyScore INT NULL,
+    PerformanceCategory INT NULL,     -- Foreign Key ke PerformanceCategory.CategoryId
+    PredictedTomorrow INT NULL,
+
+    CreatedAt DATETIME DEFAULT GETDATE()
+);
+
+
+SummaryId    UserId    WorkDate    FinishedToday    AvgWorkmanship    TotalWorkmanship    EfficiencyScore
+1            1         2025-04-01  5                311               515                 100
+2            1         2025-04-02  5                100               520                 80
+3            1         2025-04-03  5                512               525                 78
+4            2         2025-04-01  2                200               500                 60
+5            2         2025-04-02  2                150               502                 80
+6            2         2025-04-03  2                432               504                 78
+
+
+
+SummaryId    UserId    WorkDate    FinishedToday    AvgWorkmanship    TotalWorkmanship    EfficiencyScore
+652          10        2025-04-01  5                311               515                 100
+653          10        2025-04-02  5                100               520                 80
+654          10        2025-04-03  5                512               525                 78
+655          10        2025-04-04  1                200               500                 60
+656          9         2025-04-04  1                288               502                 80
+657          8         2025-04-04  1                304               504                 78
+
+
+
+
+tabel PerformanceCategory
+CREATE TABLE PerformanceCategory (
+    CategoryId INT PRIMARY KEY,             -- 0, 1, 2
+    CategoryLabel NVARCHAR(20) NOT NULL,    -- 'Rendah', 'Sedang', 'Tinggi'
+    CategoryColor NVARCHAR(10) NULL         -- '#f8d7da', '#fff3cd', '#d4edda' (optional)
+);
+
+INSERT INTO PerformanceCategory (CategoryId, CategoryLabel, CategoryColor) VALUES
+(0, 'Rendah', '#f8d7da'),
+(1, 'Sedang', '#fff3cd'),
+(2, 'Tinggi', '#d4edda');
+
+
+
+
+
+DECLARE @UserId INT;
+SET @UserId = 10; -- Ganti 123 dengan ID pengguna yang relevan
+
+WITH Last7Days AS (
+    SELECT CAST(GETDATE() - number AS DATE) AS WorkDate
+    FROM master..spt_values
+    WHERE type = 'P' AND number < 7
+)
+SELECT 
+    d.WorkDate,
+    ISNULL(s.FinishedToday, 0) AS FinishedToday,
+    ISNULL(s.EfficiencyScore, 0) AS EfficiencyScore,
+    ISNULL(s.TotalWorkmanship, 0) AS TotalWorkmanship
+FROM Last7Days d
+LEFT JOIN DailyUserSummary s ON s.WorkDate = d.WorkDate AND s.UserId = @UserId
+ORDER BY d.WorkDate;
+
+

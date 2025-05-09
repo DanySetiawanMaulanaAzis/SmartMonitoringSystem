@@ -174,9 +174,7 @@
                 </div>
             </div>
 
-            <div class="custom-text-muted">
-                Don't have account yet? <a href="./register.html">Sign up</a>
-            </div>
+            
         </div>
     </form>
 
